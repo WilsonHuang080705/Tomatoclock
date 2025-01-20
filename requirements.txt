@@ -1,0 +1,5 @@
+wx==4.0.3
+pygame==1.9.6
+argparse==1.4.0
+signal==1.2.0
+asyncio==3.4.3

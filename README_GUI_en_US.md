@@ -15,11 +15,15 @@ Pomodoro Clock is a time management tool based on the Pomodoro Technique, develo
 ```
 git clone https://github.com/WilsonHuang080705/PomodoroClock.git
 ```
-2. Run the `PomodoroGUI.py` file with Python.
+2. Install the required packages.
+```
+pip install -r requirements.txt
+```
+3. Run the `PomodoroGUI.py` file with Python.
 ```
 Python PomodoroClock.py
 ```
-3. Customize the work duration, short break duration, and long break duration through the program.
+4. Customize the work duration, short break duration, and long break duration through the program.
 
 If you have not installed the Python language, you can still run the program by clicking on the PomodoroClockgui-win-x86 folder and then clicking on PomodoroGUI.exe. 
 
