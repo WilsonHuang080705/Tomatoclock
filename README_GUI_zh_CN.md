@@ -14,11 +14,15 @@ Pomodoro Clock 是一个基于番茄工作法的时间管理工具，由 Matrix 
 ```
 git clone https://github.com/WilsonHuang080705/PomodoroClock.git
 ```
-2. 使用 Python 运行 `PomodoroGUI.py` 文件
+2. 安装依赖库。
+```
+pip install -r requirements.txt
+```
+3. 使用 Python 运行 `PomodoroGUI.py` 文件
 ```
 Python PomodoroGUI.py
 ```
-3. 通过填入程序的表格来自定义工作时长、短休息时长和长休息时长。
+4. 通过填入程序的表格来自定义工作时长、短休息时长和长休息时长。
 
 如果没有安装Python语言，你也可以点击PomodoroClockGUI-win-x86的文件夹，再点击PomodoroGUI.exe来运行程序。
 
