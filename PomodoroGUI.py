@@ -1,3 +1,5 @@
+# Developer: Matrix Huang
+# Website: https://github.com/WilsonHuang080705/PomodoroClockc
 import wx
 import random
 import pygame
@@ -34,9 +36,10 @@ class PomodoroClock(wx.Frame):
 
         self.timer_label = wx.StaticText(panel, label="")
 
-        # Buttons for start and pause/resume
+        # Buttons for start, pause/resume and help
         start_button = wx.Button(panel, label="开始")
         pause_resume_button = wx.Button(panel, label="暂停/继续")
+        help_button = wx.Button(panel, label="帮助")
         
         # Set sizer
         sizer.Add(work_label, pos=(0, 0), flag=wx.LEFT, border=10)
@@ -52,12 +55,14 @@ class PomodoroClock(wx.Frame):
 
         sizer.Add(start_button, pos=(4, 0), flag=wx.LEFT | wx.BOTTOM, border=10)
         sizer.Add(pause_resume_button, pos=(4, 1), flag=wx.BOTTOM, border=10)
+        sizer.Add(help_button, pos=(5, 0), span=(1, 2), flag=wx.EXPAND | wx.TOP, border=20)
         
         panel.SetSizer(sizer)
 
         # Bind button events
         start_button.Bind(wx.EVT_BUTTON, self.on_start_pomodoro)
         pause_resume_button.Bind(wx.EVT_BUTTON, self.toggle_pause)
+        help_button.Bind(wx.EVT_BUTTON, self.show_help)
 
         self.Show()
 
@@ -105,6 +110,9 @@ class PomodoroClock(wx.Frame):
         # Play the "ding" sound when the message is shown
         self.ding_sound.play()
 
+        # Show a dialog with completion message
+        wx.MessageBox("恭喜你完成了一个番茄钟！休息一下吧。", "任务完成", wx.OK | wx.ICON_INFORMATION)
+
     def on_start_pomodoro(self, event):
         try:
             self.work_minutes = int(self.work_text.GetValue())
@@ -119,6 +127,18 @@ class PomodoroClock(wx.Frame):
 
     def show_error_message(self, message):
         wx.MessageBox(message, "错误", wx.OK | wx.ICON_ERROR)
+
+    def show_help(self, event):
+        help_message = (
+            "番茄钟使用指南：\n\n"
+            "1. 设置工作时长、短休息时长和长休息时长。\n"
+            "2. 点击'开始'按钮开始计时。\n"
+            "3. 当时间结束时，您将听到'叮'的提示音，并看到任务完成的消息。\n"
+            "4. 点击'暂停/继续'来暂停和恢复计时。\n"
+            "5. 每完成四个番茄钟，您将进入长休息时段。"
+        )
+        wx.MessageBox(help_message, "帮助", wx.OK | wx.ICON_INFORMATION)
+
 
 if __name__ == "__main__":
     app = wx.App(False)
