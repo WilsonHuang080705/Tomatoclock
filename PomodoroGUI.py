@@ -1,53 +1,67 @@
-#Developer: Matrix Huang
-#Repo: https://github.com/WilsonHuang080705/PomodoroClock
-import time
+import wx
 import random
-from tkinter import Tk, Label, Button, StringVar, Entry
+import pygame
+import time
 
-class PomodoroClock(Tk):
-    #创建PomodoroCock类
-    def __init__(self):
-        super().__init__()
-        self.title("番茄钟计时器")
+class PomodoroClock(wx.Frame):
+    def __init__(self, parent, title):
+        super().__init__(parent, title=title, size=(400, 300))
+        
         self.work_minutes = 25
         self.short_break_minutes = 5
         self.long_break_minutes = 15
         self.pomodoros_completed = 0
         self.paused = False
         self.remaining_time = None
-        self.create_widgets()
 
-    def create_widgets(self):
-        # 创建输入框及变量
-        work_label = Label(self, text="工作时长(分钟):")
-        work_label.grid(row=0, column=0)
-        self.work_var = StringVar(value=str(self.work_minutes))
-        work_entry = Entry(self, textvariable=self.work_var)
-        work_entry.grid(row=0, column=1)
+        # Initialize pygame mixer for sound
+        pygame.mixer.init()
+        self.ding_sound = pygame.mixer.Sound("ding.wav")  # Load the ding sound file
 
-        sb_label = Label(self, text="短休息时长(分钟):")
-        sb_label.grid(row=1, column=0)
-        self.sb_var = StringVar(value=str(self.short_break_minutes))
-        sb_entry = Entry(self, textvariable=self.sb_var)
-        sb_entry.grid(row=1, column=1)
+        # Create panel and sizer for layout
+        panel = wx.Panel(self)
+        sizer = wx.GridBagSizer(10, 10)
 
-        lb_label = Label(self, text="长休息时长(分钟):")
-        lb_label.grid(row=2, column=0)
-        self.lb_var = StringVar(value=str(self.long_break_minutes))
-        lb_entry = Entry(self, textvariable=self.lb_var)
-        lb_entry.grid(row=2, column=1)
-
-        self.timer_label = Label(self, text="")
-        self.timer_label.grid(row=3, column=0, columnspan=2)
-
-        start_button = Button(self, text="开始", command=self.start_pomodoro)
-        start_button.grid(row=4, column=0)
+        # Create input fields and labels
+        work_label = wx.StaticText(panel, label="工作时长(分钟):")
+        self.work_text = wx.TextCtrl(panel, value=str(self.work_minutes), size=(50, -1))
         
-        pause_resume_button = Button(self, text="暂停/继续", command=self.toggle_pause)
-        pause_resume_button.grid(row=4, column=1)
+        sb_label = wx.StaticText(panel, label="短休息时长(分钟):")
+        self.sb_text = wx.TextCtrl(panel, value=str(self.short_break_minutes), size=(50, -1))
+        
+        lb_label = wx.StaticText(panel, label="长休息时长(分钟):")
+        self.lb_text = wx.TextCtrl(panel, value=str(self.long_break_minutes), size=(50, -1))
+
+        self.timer_label = wx.StaticText(panel, label="")
+
+        # Buttons for start and pause/resume
+        start_button = wx.Button(panel, label="开始")
+        pause_resume_button = wx.Button(panel, label="暂停/继续")
+        
+        # Set sizer
+        sizer.Add(work_label, pos=(0, 0), flag=wx.LEFT, border=10)
+        sizer.Add(self.work_text, pos=(0, 1), flag=wx.EXPAND)
+        
+        sizer.Add(sb_label, pos=(1, 0), flag=wx.LEFT, border=10)
+        sizer.Add(self.sb_text, pos=(1, 1), flag=wx.EXPAND)
+        
+        sizer.Add(lb_label, pos=(2, 0), flag=wx.LEFT, border=10)
+        sizer.Add(self.lb_text, pos=(2, 1), flag=wx.EXPAND)
+        
+        sizer.Add(self.timer_label, pos=(3, 0), span=(1, 2), flag=wx.EXPAND | wx.TOP, border=20)
+
+        sizer.Add(start_button, pos=(4, 0), flag=wx.LEFT | wx.BOTTOM, border=10)
+        sizer.Add(pause_resume_button, pos=(4, 1), flag=wx.BOTTOM, border=10)
+        
+        panel.SetSizer(sizer)
+
+        # Bind button events
+        start_button.Bind(wx.EVT_BUTTON, self.on_start_pomodoro)
+        pause_resume_button.Bind(wx.EVT_BUTTON, self.toggle_pause)
+
+        self.Show()
 
     def countdown(self, remaining_time, is_break=False, long_break=False):
-        #创建倒计时函数
         if self.paused:
             return
         
@@ -68,32 +82,34 @@ class PomodoroClock(Tk):
             return
 
         minutes, seconds = divmod(remaining_time, 60)
-        self.timer_label.config(text=f"剩余时间: {minutes:02d} 分钟 {seconds:02d} 秒")
-        self.after(1000, lambda: self.countdown(remaining_time - 1, is_break=is_break, long_break=long_break))
+        self.timer_label.SetLabel(f"剩余时间: {minutes:02d} 分钟 {seconds:02d} 秒")
+        
+        # Use wx.CallLater for a non-blocking delay
+        wx.CallLater(1000, self.countdown, remaining_time - 1, is_break, long_break)
 
-    def toggle_pause(self):
-        #暂停按钮
+    def toggle_pause(self, event):
         self.paused = not self.paused
         if self.paused:
-            self.timer_label.config(text="已暂停")
+            self.timer_label.SetLabel("已暂停")
         else:
             self.countdown(self.remaining_time)
 
     def show_random_message(self):
-        #展示“一言”功能
         messages = ["面朝大海，春暖花开。",
                     "想要的都拥有，得不到的都释怀。",
                     "明月松间照，清泉石上流",
                     "日出江花红胜火，春来江水绿如蓝。"]
         random_message = random.choice(messages)
-        self.timer_label.config(text=random_message)
+        self.timer_label.SetLabel(random_message)
+        
+        # Play the "ding" sound when the message is shown
+        self.ding_sound.play()
 
-    def start_pomodoro(self):
-        #启动番茄钟
+    def on_start_pomodoro(self, event):
         try:
-            self.work_minutes = int(self.work_var.get())
-            self.short_break_minutes = int(self.sb_var.get())
-            self.long_break_minutes = int(self.lb_var.get())
+            self.work_minutes = int(self.work_text.GetValue())
+            self.short_break_minutes = int(self.sb_text.GetValue())
+            self.long_break_minutes = int(self.lb_text.GetValue())
         except ValueError:
             self.show_error_message("请输入有效的数字!")
             return
@@ -102,9 +118,9 @@ class PomodoroClock(Tk):
         self.countdown(self.remaining_time)
 
     def show_error_message(self, message):
-        #报错信息
-        self.timer_label.config(text=message)
+        wx.MessageBox(message, "错误", wx.OK | wx.ICON_ERROR)
 
 if __name__ == "__main__":
-    app = PomodoroClock()
-    app.mainloop()
+    app = wx.App(False)
+    PomodoroClock(None, title="番茄钟计时器")
+    app.MainLoop()
